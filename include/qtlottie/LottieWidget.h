@@ -5,7 +5,7 @@
 namespace tvg {
 QT_FORWARD_DECLARE_CLASS(Animation)
 QT_FORWARD_DECLARE_CLASS(Picture)
-QT_FORWARD_DECLARE_CLASS(Canvas)
+QT_FORWARD_DECLARE_CLASS(SwCanvas)
 QT_FORWARD_DECLARE_CLASS(QTimer)
 } // namespace tvg
 
@@ -23,13 +23,17 @@ public:
 private:
     std::string _path;
     tvg::Animation *_animation;
-    tvg::Canvas *_canvas;
+    tvg::SwCanvas *_canvas;
     tvg::Picture *_picture;
     bool _valid;
     quint32 _currentFrame;
     quint32 _totalFrame;
+    double _duration;
     bool _play;
     QTimer *_frameTimer;
+    double _width;
+    double _height;
+    uint32_t *_buffer;
 
     // QWidget interface
 protected:
