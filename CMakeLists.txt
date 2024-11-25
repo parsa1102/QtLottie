@@ -13,7 +13,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(THORVG REQUIRED thorvg)
 
-
 add_library(QtLottie SHARED
     include/qtlottie/LottieWidget.h
     src/LottieWidget.cpp
@@ -25,13 +24,29 @@ target_include_directories(QtLottie PRIVATE
     include/qtlottie/
 )
 
-
 target_link_libraries(QtLottie PRIVATE
- Qt${QT_VERSION_MAJOR}::Core
- Qt${QT_VERSION_MAJOR}::Gui
- Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Widgets
 )
 link_directories(${THORVG_LIBRARY_LIBS})
 
 target_compile_definitions(QtLottie PRIVATE TEST_LIBRARY)
 
+install(TARGETS QtLottie
+    EXPORT QtLottieTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include/qtlottie/
+    DESTINATION include/qtlottie
+    FILES_MATCHING PATTERN "*.h"
+)
+
+install(EXPORT QtLottieTargets
+    FILE QtLottieConfig.cmake
+    NAMESPACE QtLottie::
+    DESTINATION lib/cmake/QtLottie
+)
