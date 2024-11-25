@@ -11,6 +11,12 @@ QT_FORWARD_DECLARE_CLASS(QTimer)
 
 namespace Pari {
 
+struct Result
+{
+    bool succeed = false;
+    QString errMsg;
+};
+
 class LottieWidget : public QWidget
 {
 public:
@@ -19,6 +25,8 @@ public:
     bool isValid();
     bool isPlay();
     void setPlay(bool play);
+    Result setCurrentFrame(quint32 currentFrame);
+    quint32 getCurrentFrame();
 
 private:
     std::string _path;

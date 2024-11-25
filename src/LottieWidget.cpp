@@ -16,6 +16,7 @@ LottieWidget::LottieWidget(std::string path, QWidget *parent)
     , _currentFrame{0}
     , _totalFrame{0}
     , _duration{0.0}
+    , _frameTimer{nullptr}
 {
     _animation = tvg::Animation::gen();
     _picture = _animation->picture();
@@ -39,7 +40,7 @@ LottieWidget::LottieWidget(std::string path, QWidget *parent)
         }
         _buffer = new uint32_t[width() * height()];
         _canvas = tvg::SwCanvas::gen();
-        _canvas->target(_buffer, width(), width(), height(), tvg::ColorSpace::ABGR8888);
+        _canvas->target(_buffer, width(), width(), height(), tvg::ColorSpace::ARGB8888);
         _totalFrame = _animation->totalFrame();
         _currentFrame = 0;
         _duration = _animation->duration(); // in seconds
@@ -80,16 +81,40 @@ void LottieWidget::setPlay(bool play)
         });
         _frameTimer->start();
     }
+    return;
+}
+
+Result LottieWidget::setCurrentFrame(quint32 currentFrame)
+{
+    Result res = {false, ""};
+    if (currentFrame <= _totalFrame) {
+        _currentFrame = currentFrame;
+        res.succeed = true;
+    } else {
+        res.succeed = false;
+        res.errMsg = "can not set currentFrame since input is bigger than total frame count";
+    }
+    return res;
+}
+
+quint32 LottieWidget::getCurrentFrame()
+{
+    return _currentFrame;
 }
 
 void LottieWidget::paintEvent(QPaintEvent *event)
 {
+    qDebug() << "paint event called on frame : " << _currentFrame;
     _animation->frame(_currentFrame);
     _picture = _animation->picture();
-    _canvas->update(_picture);
+    _canvas->clear();
+    _canvas->push(_picture);
+    _canvas->draw();
+    _canvas->sync();
     QPainter painter(this);
     QImage img(reinterpret_cast<const uchar *>(_buffer), width(), height(), QImage::Format_ARGB32);
     painter.drawImage(0, 0, img);
+    return;
 }
 
 } // namespace Pari
