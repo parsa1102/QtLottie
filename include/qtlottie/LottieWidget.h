@@ -46,6 +46,7 @@ private:
     // QWidget interface
 protected:
     void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *event);
 };
 
 } // namespace Pari

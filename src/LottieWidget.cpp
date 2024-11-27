@@ -3,6 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QPainter>
+#include <QResizeEvent>
 #include <QTimer>
 #include <LottieWidget.h>
 #include <thorvg.h>
@@ -17,6 +18,7 @@ LottieWidget::LottieWidget(std::string path, QWidget *parent)
     , _totalFrame{0}
     , _duration{0.0}
     , _frameTimer{nullptr}
+    , _buffer{nullptr}
 {
     _animation = tvg::Animation::gen();
     _picture = _animation->picture();
@@ -38,7 +40,7 @@ LottieWidget::LottieWidget(std::string path, QWidget *parent)
         } else {
             qWarning() << "autosizing failed due to QFile failing to open Lottie json File";
         }
-        _buffer = new uint32_t[width() * height()];
+        _buffer = new uint32_t[width() * height()]{0};
         _canvas = tvg::SwCanvas::gen();
         _canvas->target(_buffer, width(), width(), height(), tvg::ColorSpace::ARGB8888);
         _totalFrame = _animation->totalFrame();
@@ -115,6 +117,26 @@ void LottieWidget::paintEvent(QPaintEvent *event)
     QImage img(reinterpret_cast<const uchar *>(_buffer), width(), height(), QImage::Format_ARGB32);
     painter.drawImage(0, 0, img);
     return;
+}
+
+void LottieWidget::resizeEvent(QResizeEvent *event)
+{
+    if (_valid) {
+        _width = event->size().width();
+        _height = event->size().height();
+        if (nullptr != _buffer) {
+            delete[] _buffer;
+        }
+        // do this better implicit casting like this is not a good idea
+        _buffer = new uint32_t[quint32(_width) * quint32(_height)]{0};
+        _picture = _animation->picture();
+        _picture->size(_width, _height);
+        delete _canvas;
+        _canvas = tvg::SwCanvas::gen();
+        _canvas->clear();
+        _canvas->target(_buffer, _width, _width, _height, tvg::ColorSpace::ARGB8888);
+        _canvas->push(_picture);
+    }
 }
 
 } // namespace Pari
