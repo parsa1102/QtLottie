@@ -8,6 +8,41 @@
 #include <LottieWidget.h>
 #include <thorvg.h>
 
+static bool logLoadResult(tvg::Result const &result)
+{
+    bool ret = false;
+    switch (result) {
+    case tvg::Result::Success:
+        qInfo() << "Lottie File parsed and loaded successfully";
+        ret = true;
+        break;
+    case tvg::Result::InvalidArguments:
+        qWarning() << "Invalid Arguments error while loading lottie file e.g. empty paths or null "
+                      "pointers";
+        break;
+    case tvg::Result::InsufficientCondition:
+        qWarning() << "InsufficientCondition error while loading lottie file e.g. asking for "
+                      "properties of an object, which does not exist";
+        break;
+    case tvg::Result::FailedAllocation:
+        qWarning() << "Failed Allocation error while loading lottie file";
+        break;
+    case tvg::Result::MemoryCorruption:
+        qWarning() << "memory corruption error while loading lottie file";
+        break;
+    case tvg::Result::NonSupport:
+        qWarning() << "Non Support error while loading lottie file, make sure your thorvg build "
+                      "supports Lottie files";
+        break;
+    case tvg::Result::Unknown:
+        qWarning() << "Unknown error while loading lottie file";
+        break;
+    default:
+        qWarning() << "Unknown error while loading lottie file";
+    }
+    return ret;
+}
+
 namespace Pari {
 
 LottieWidget::LottieWidget(std::string path, QWidget *parent)
@@ -23,7 +58,8 @@ LottieWidget::LottieWidget(std::string path, QWidget *parent)
 {
     _animation = tvg::Animation::gen();
     _picture = _animation->picture();
-    if (_picture->load(path.c_str()) == tvg::Result::Success) {
+    auto const &res = _picture->load(path.c_str());
+    if (logLoadResult(res)) {
         _valid = true;
         QFile file(QString::fromStdString(path));
         if (file.open(QIODevice::ReadOnly)) {
@@ -50,8 +86,6 @@ LottieWidget::LottieWidget(std::string path, QWidget *parent)
         _canvas->push(_picture);
     } else {
         _valid = false;
-        qWarning() << "failed to load lottie animation from file path : "
-                   << QString::fromStdString(path);
     }
 }
 
