@@ -25,8 +25,13 @@ public:
     bool isValid();
     bool isPlay();
     void setPlay(bool play);
+    bool isPaused();
+    void setPaused(bool paused);
     Result setCurrentFrame(quint32 currentFrame);
     quint32 getCurrentFrame();
+    double getDuration();
+    quint32 getTotalFrame();
+    double getFrameRate();
 
 private:
     std::string _path;

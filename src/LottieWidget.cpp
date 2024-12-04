@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <LottieWidget.h>
 #include <thorvg.h>
+
 namespace Pari {
 
 LottieWidget::LottieWidget(std::string path, QWidget *parent)
@@ -86,6 +87,16 @@ void LottieWidget::setPlay(bool play)
     return;
 }
 
+bool LottieWidget::isPaused()
+{
+    return !_play;
+}
+
+void LottieWidget::setPaused(bool paused)
+{
+    _play = !paused;
+}
+
 Result LottieWidget::setCurrentFrame(quint32 currentFrame)
 {
     Result res = {false, ""};
@@ -102,6 +113,21 @@ Result LottieWidget::setCurrentFrame(quint32 currentFrame)
 quint32 LottieWidget::getCurrentFrame()
 {
     return _currentFrame;
+}
+
+double LottieWidget::getDuration()
+{
+    return _duration;
+}
+
+quint32 LottieWidget::getTotalFrame()
+{
+    return _totalFrame;
+}
+
+double LottieWidget::getFrameRate()
+{
+    return double(_totalFrame) / _duration;
 }
 
 void LottieWidget::paintEvent(QPaintEvent *event)
