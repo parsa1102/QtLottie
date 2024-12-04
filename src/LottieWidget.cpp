@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QResizeEvent>
 #include <QTimer>
+#include <QtMath>
 #include <LottieWidget.h>
 #include <thorvg.h>
 
@@ -55,38 +56,11 @@ LottieWidget::LottieWidget(std::string path, QWidget *parent)
     , _duration{0.0}
     , _frameTimer{nullptr}
     , _buffer{nullptr}
+    , _animation{nullptr}
+    , _canvas{nullptr}
+    , _picture{nullptr}
 {
-    _animation = tvg::Animation::gen();
-    _picture = _animation->picture();
-    auto const &res = _picture->load(path.c_str());
-    if (logLoadResult(res)) {
-        _valid = true;
-        QFile file(QString::fromStdString(path));
-        if (file.open(QIODevice::ReadOnly)) {
-            QByteArray fileData = file.readAll();
-            file.close();
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(fileData);
-            QJsonObject object = jsonDoc.object();
-            if (object.contains("w") && object.contains("h")) {
-                _width = object["w"].toDouble();
-                _height = object["h"].toDouble();
-                setFixedSize(_width, _height);
-            } else {
-                qWarning() << "json file did not contain valid w or h keys so autosizing failed";
-            }
-        } else {
-            qWarning() << "autosizing failed due to QFile failing to open Lottie json File";
-        }
-        _buffer = new uint32_t[width() * height()]{0};
-        _canvas = tvg::SwCanvas::gen();
-        _canvas->target(_buffer, width(), width(), height(), tvg::ColorSpace::ARGB8888);
-        _totalFrame = _animation->totalFrame();
-        _currentFrame = 0;
-        _duration = _animation->duration(); // in seconds
-        _canvas->push(_picture);
-    } else {
-        _valid = false;
-    }
+    setSource(path);
 }
 
 bool LottieWidget::isValid()
@@ -164,19 +138,86 @@ double LottieWidget::getFrameRate()
     return double(_totalFrame) / _duration;
 }
 
+bool LottieWidget::setSource(std::string path)
+{
+    cleanUpMemory();
+    _animation = tvg::Animation::gen();
+    _picture = _animation->picture();
+    auto const &res = _picture->load(path.c_str());
+    if (logLoadResult(res)) {
+        _valid = true;
+        _width = width();
+        _height = height();
+        QFile file(QString::fromStdString(path));
+        if (file.open(QIODevice::ReadOnly)) {
+            QByteArray fileData = file.readAll();
+            file.close();
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(fileData);
+            QJsonObject object = jsonDoc.object();
+            if (object.contains("w") && object.contains("h")) {
+                _width = object["w"].toDouble();
+                _height = object["h"].toDouble();
+                setFixedSize(_width, _height);
+            } else {
+                qWarning() << "json file did not contain valid w or h keys so autosizing failed";
+            }
+        } else {
+            qWarning() << "autosizing failed due to QFile failing to open Lottie json File";
+        }
+        allocateBuffer();
+        _canvas = tvg::SwCanvas::gen();
+        _canvas->target(_buffer, width(), width(), height(), tvg::ColorSpace::ARGB8888);
+        _totalFrame = _animation->totalFrame();
+        _currentFrame = 0;
+        _duration = _animation->duration(); // in seconds
+        _canvas->push(_picture);
+    } else {
+        _valid = false;
+    }
+    return _valid;
+}
+
+void LottieWidget::allocateBuffer()
+{
+    auto const &size = qFloor(_width * _height);
+    if (nullptr == _buffer) {
+        _buffer = (uint32_t *) malloc(size * sizeof(uint32_t));
+    } else {
+        _buffer = (uint32_t *) realloc(_buffer, size * sizeof(uint32_t));
+    }
+    memset(_buffer, 0, size * sizeof(uint32_t));
+    return;
+}
+
+void LottieWidget::cleanUpMemory()
+{
+    if (nullptr != _animation) {
+        delete _animation;
+        //must leave deleting the picture to this
+    }
+    if (nullptr != _canvas) {
+        delete _canvas;
+    }
+}
+
 void LottieWidget::paintEvent(QPaintEvent *event)
 {
-    qDebug() << "paint event called on frame : " << _currentFrame;
-    _animation->frame(_currentFrame);
-    _picture = _animation->picture();
-    _canvas->clear();
-    _canvas->push(_picture);
-    _canvas->draw();
-    _canvas->sync();
-    QPainter painter(this);
-    QImage img(reinterpret_cast<const uchar *>(_buffer), width(), height(), QImage::Format_ARGB32);
-    painter.drawImage(0, 0, img);
-    return;
+    if (_valid) {
+        qDebug() << "paint event called on frame : " << _currentFrame;
+        _animation->frame(_currentFrame);
+        _picture = _animation->picture();
+        _canvas->clear();
+        _canvas->push(_picture);
+        _canvas->draw();
+        _canvas->sync();
+        QPainter painter(this);
+        QImage img(reinterpret_cast<const uchar *>(_buffer),
+                   width(),
+                   height(),
+                   QImage::Format_ARGB32);
+        painter.drawImage(0, 0, img);
+        return;
+    }
 }
 
 void LottieWidget::resizeEvent(QResizeEvent *event)

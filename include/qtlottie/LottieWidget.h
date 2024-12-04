@@ -32,6 +32,11 @@ public:
     double getDuration();
     quint32 getTotalFrame();
     double getFrameRate();
+    bool setSource(std::string path);
+
+private:
+    void allocateBuffer();
+    void cleanUpMemory();
 
 private:
     std::string _path;
