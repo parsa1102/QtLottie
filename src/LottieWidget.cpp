@@ -225,9 +225,7 @@ void LottieWidget::resizeEvent(QResizeEvent *event)
     if (_valid) {
         _width = event->size().width();
         _height = event->size().height();
-        if (nullptr != _buffer) {
-            delete[] _buffer;
-        }
+        allocateBuffer();
         // do this better implicit casting like this is not a good idea
         _buffer = new uint32_t[quint32(_width) * quint32(_height)]{0};
         _picture = _animation->picture();
