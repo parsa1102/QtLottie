@@ -180,11 +180,7 @@ bool LottieWidget::setSource(std::string path)
 void LottieWidget::allocateBuffer()
 {
     auto const &size = qFloor(_width * _height);
-    if (nullptr == _buffer) {
-        _buffer = (uint32_t *) malloc(size * sizeof(uint32_t));
-    } else {
-        _buffer = (uint32_t *) realloc(_buffer, size * sizeof(uint32_t));
-    }
+    _buffer = (uint32_t *) realloc(_buffer, size * sizeof(uint32_t));
     memset(_buffer, 0, size * sizeof(uint32_t));
     return;
 }
