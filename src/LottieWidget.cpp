@@ -8,6 +8,7 @@
 #include <QtMath>
 #include <LottieWidget.h>
 #include <thorvg.h>
+#include <QtMath>
 
 static bool logLoadResult(tvg::Result const &result)
 {
@@ -222,8 +223,7 @@ void LottieWidget::resizeEvent(QResizeEvent *event)
         _width = event->size().width();
         _height = event->size().height();
         allocateBuffer();
-        // do this better implicit casting like this is not a good idea
-        _buffer = new uint32_t[quint32(_width) * quint32(_height)]{0};
+        _buffer = new uint32_t[qCeil(_width) * qCeil(_height)]{0};
         _picture = _animation->picture();
         _picture->size(_width, _height);
         delete _canvas;
