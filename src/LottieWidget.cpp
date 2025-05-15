@@ -200,12 +200,10 @@ void LottieWidget::cleanUpMemory()
 void LottieWidget::paintEvent(QPaintEvent *event)
 {
     if (_valid) {
-        qDebug() << "paint event called on frame : " << _currentFrame;
         _animation->frame(_currentFrame);
         _picture = _animation->picture();
-        _canvas->clear();
-        _canvas->push(_picture);
-        _canvas->draw();
+        _canvas->update(_picture);
+        _canvas->draw(true);
         _canvas->sync();
         QPainter painter(this);
         QImage img(reinterpret_cast<const uchar *>(_buffer),
@@ -228,9 +226,9 @@ void LottieWidget::resizeEvent(QResizeEvent *event)
         _picture->size(_width, _height);
         delete _canvas;
         _canvas = tvg::SwCanvas::gen();
-        _canvas->clear();
         _canvas->target(_buffer, _width, _width, _height, tvg::ColorSpace::ARGB8888);
         _canvas->push(_picture);
+        _canvas->draw(true);
     }
 }
 
