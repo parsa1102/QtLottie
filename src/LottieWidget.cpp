@@ -201,8 +201,7 @@ void LottieWidget::paintEvent(QPaintEvent *event)
 {
     if (_valid) {
         _animation->frame(_currentFrame);
-        _picture = _animation->picture();
-        _canvas->update(_picture);
+        _canvas->update();
         _canvas->draw(true);
         _canvas->sync();
         QPainter painter(this);
