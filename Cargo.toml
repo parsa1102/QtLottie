@@ -1,0 +1,21 @@
+[package]
+name = "qt_lottie"
+version = "0.1.0"
+edition = "2024"
+links = "qt_lottie"
+
+[package.metadata.zanbil]
+cpp = 17
+file_rules = [
+    { path = "^src/.*\\.cpp$", kind = "source" },
+    { path = "^include/qtlottie/(.*)\\.h$", kind = "public_header", destination = "$base/$1.h" },
+]
+
+[workspace]
+members = ["qt_lottie_example"]
+
+[dependencies]
+
+[build-dependencies]
+build-rs = "0.3.1"
+zanbil-build = { version = "0.1.1", path = "../zanbil/zanbil-build" }
