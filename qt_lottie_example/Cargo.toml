@@ -1,0 +1,14 @@
+[package]
+name = "qt_lottie_example"
+version = "0.1.0"
+edition = "2024"
+links = "qt_lottie_example"
+
+[package.metadata.zanbil]
+cpp = 17
+
+[dependencies]
+qt_lottie = { version = "0.1.0", path = ".." }
+
+[build-dependencies]
+zanbil-build = { version = "0.1.1", path = "../../zanbil/zanbil-build" }
